@@ -49,7 +49,7 @@
    - エラー・ローディング状態のUI
 
 【ディレクトリ構成】
-app/src/main/java/com/fukudai/meshiroulette/
+app/src/main/java/com/example/androidapp/
 ├── data/
 │   ├── remote/
 │   ├── model/
