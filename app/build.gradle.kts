@@ -19,7 +19,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://your-cloud-run-url.run.app/\"")
+        buildConfigField("String", "BASE_URL", "\"https://fukudaifood-130668695114.asia-northeast1.run.app/\"")
     }
 
     buildTypes {

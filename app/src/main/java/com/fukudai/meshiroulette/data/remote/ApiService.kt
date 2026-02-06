@@ -1,9 +1,7 @@
 package com.fukudai.meshiroulette.data.remote
 
 import com.fukudai.meshiroulette.data.model.RestaurantDto
-import com.fukudai.meshiroulette.data.model.RestaurantListResponse
 import com.fukudai.meshiroulette.data.model.RouletteRequest
-import com.fukudai.meshiroulette.data.model.RouletteResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -16,8 +14,8 @@ interface ApiService {
     @GET("v1/restaurants")
     suspend fun getRestaurants(
         @Query("genre") genre: String? = null,
-        @Query("priceRange") priceRange: String? = null
-    ): Response<RestaurantListResponse>
+        @Query("price_range") priceRange: Int? = null
+    ): Response<List<RestaurantDto>>
 
     @GET("v1/restaurants/{id}")
     suspend fun getRestaurantDetail(
@@ -27,5 +25,5 @@ interface ApiService {
     @POST("v1/roulette")
     suspend fun spinRoulette(
         @Body request: RouletteRequest
-    ): Response<RouletteResponse>
+    ): Response<RestaurantDto>
 }

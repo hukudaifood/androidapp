@@ -28,7 +28,7 @@ class RestaurantRepositoryImpl @Inject constructor(
             )
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    emit(NetworkResult.Success(body.restaurants.toDomain()))
+                    emit(NetworkResult.Success(body.toDomain()))
                 } ?: emit(NetworkResult.Error("レスポンスが空です"))
             } else {
                 emit(NetworkResult.Error("エラーが発生しました", response.code()))
@@ -67,7 +67,7 @@ class RestaurantRepositoryImpl @Inject constructor(
             val response = apiService.spinRoulette(request)
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    emit(NetworkResult.Success(body.restaurant.toDomain()))
+                    emit(NetworkResult.Success(body.toDomain()))
                 } ?: emit(NetworkResult.Error("レスポンスが空です"))
             } else {
                 emit(NetworkResult.Error("エラーが発生しました", response.code()))

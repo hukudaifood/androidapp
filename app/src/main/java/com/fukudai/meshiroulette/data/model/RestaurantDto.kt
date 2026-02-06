@@ -4,44 +4,32 @@ import com.google.gson.annotations.SerializedName
 
 data class RestaurantDto(
     @SerializedName("id")
-    val id: String,
+    val id: String?,
     @SerializedName("name")
-    val name: String,
+    val name: String?,
     @SerializedName("genre")
-    val genre: String,
-    @SerializedName("priceRange")
-    val priceRange: String,
+    val genre: String?,
+    @SerializedName("price_range")
+    val priceRange: Int?,
     @SerializedName("address")
-    val address: String,
+    val address: String?,
     @SerializedName("latitude")
     val latitude: Double?,
     @SerializedName("longitude")
     val longitude: Double?,
-    @SerializedName("imageUrl")
+    @SerializedName("image_url")
     val imageUrl: String?,
-    @SerializedName("rating")
-    val rating: Double?,
-    @SerializedName("openingHours")
+    @SerializedName("google_maps_url")
+    val googleMapsUrl: String?,
+    @SerializedName("opening_hours")
     val openingHours: String?,
-    @SerializedName("description")
-    val description: String?
-)
-
-data class RestaurantListResponse(
-    @SerializedName("restaurants")
-    val restaurants: List<RestaurantDto>,
-    @SerializedName("total")
-    val total: Int
+    @SerializedName("closing_hours")
+    val closingHours: String?
 )
 
 data class RouletteRequest(
     @SerializedName("genre")
     val genre: String? = null,
-    @SerializedName("priceRange")
-    val priceRange: String? = null
-)
-
-data class RouletteResponse(
-    @SerializedName("restaurant")
-    val restaurant: RestaurantDto
+    @SerializedName("price_range")
+    val priceRange: Int? = null
 )

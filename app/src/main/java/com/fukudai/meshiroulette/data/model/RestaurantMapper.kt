@@ -6,20 +6,20 @@ import com.fukudai.meshiroulette.domain.model.Restaurant
 
 fun RestaurantDto.toDomain(): Restaurant {
     return Restaurant(
-        id = id,
-        name = name,
+        id = id.orEmpty(),
+        name = name.orEmpty(),
         genre = Genre.fromApiValue(genre),
         priceRange = PriceRange.fromApiValue(priceRange),
-        address = address,
+        address = address.orEmpty(),
         latitude = latitude,
         longitude = longitude,
         imageUrl = imageUrl,
-        rating = rating,
+        googleMapsUrl = googleMapsUrl,
         openingHours = openingHours,
-        description = description
+        closingHours = closingHours
     )
 }
 
-fun List<RestaurantDto>.toDomain(): List<Restaurant> {
-    return map { it.toDomain() }
+fun List<RestaurantDto?>.toDomain(): List<Restaurant> {
+    return mapNotNull { it?.toDomain() }
 }

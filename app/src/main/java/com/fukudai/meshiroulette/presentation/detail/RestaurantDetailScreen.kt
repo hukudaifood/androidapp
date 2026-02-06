@@ -18,7 +18,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -155,23 +154,6 @@ private fun RestaurantDetailContent(
                 )
             }
 
-            restaurant.rating?.let { rating ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Rating",
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = String.format("%.1f", rating),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.Top) {
@@ -188,7 +170,7 @@ private fun RestaurantDetailContent(
                 )
             }
 
-            restaurant.openingHours?.let { hours ->
+            if (!restaurant.openingHours.isNullOrEmpty() || !restaurant.closingHours.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.Top) {
                     Icon(
@@ -198,24 +180,18 @@ private fun RestaurantDetailContent(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+                    val timeText = buildString {
+                        append(restaurant.openingHours ?: "")
+                        if (!restaurant.openingHours.isNullOrEmpty() && !restaurant.closingHours.isNullOrEmpty()) {
+                            append(" 〜 ")
+                        }
+                        append(restaurant.closingHours ?: "")
+                    }
                     Text(
-                        text = hours,
+                        text = timeText,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-            }
-
-            restaurant.description?.let { description ->
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "お店について",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
 
             if (restaurant.latitude != null && restaurant.longitude != null) {
