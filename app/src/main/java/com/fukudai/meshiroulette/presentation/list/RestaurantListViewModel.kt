@@ -30,7 +30,8 @@ class RestaurantListViewModel @Inject constructor(
         viewModelScope.launch {
             getRestaurantsUseCase(
                 genre = _uiState.value.selectedGenre,
-                priceRange = _uiState.value.selectedPriceRange
+                priceRange = _uiState.value.selectedPriceRange,
+                isOpenNow = _uiState.value.isOpenNowOnly.takeIf { it }
             ).collect { result ->
                 when (result) {
                     is NetworkResult.Loading -> {
@@ -62,6 +63,11 @@ class RestaurantListViewModel @Inject constructor(
 
     fun setPriceRange(priceRange: PriceRange) {
         _uiState.update { it.copy(selectedPriceRange = priceRange) }
+        loadRestaurants()
+    }
+
+    fun setOpenNowOnly(isOpenNow: Boolean) {
+        _uiState.update { it.copy(isOpenNowOnly = isOpenNow) }
         loadRestaurants()
     }
 

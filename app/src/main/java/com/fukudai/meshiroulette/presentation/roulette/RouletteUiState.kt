@@ -9,6 +9,7 @@ data class RouletteUiState(
     val selectedRestaurant: Restaurant? = null,
     val selectedGenre: Genre = Genre.ALL,
     val selectedPriceRange: PriceRange = PriceRange.ALL,
+    val isOpenNowOnly: Boolean = false,
     val showFilterSheet: Boolean = false,
     val error: String? = null
 )

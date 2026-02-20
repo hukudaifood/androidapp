@@ -13,8 +13,9 @@ class GetRestaurantsUseCase @Inject constructor(
 ) {
     operator fun invoke(
         genre: Genre? = null,
-        priceRange: PriceRange? = null
+        priceRange: PriceRange? = null,
+        isOpenNow: Boolean? = null
     ): Flow<NetworkResult<List<Restaurant>>> {
-        return repository.getRestaurants(genre, priceRange)
+        return repository.getRestaurants(genre, priceRange, isOpenNow)
     }
 }

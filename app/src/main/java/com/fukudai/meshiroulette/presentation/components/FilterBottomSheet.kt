@@ -25,8 +25,10 @@ import com.fukudai.meshiroulette.domain.model.PriceRange
 fun FilterBottomSheet(
     selectedGenre: Genre,
     selectedPriceRange: PriceRange,
+    isOpenNowOnly: Boolean,
     onGenreSelected: (Genre) -> Unit,
     onPriceRangeSelected: (PriceRange) -> Unit,
+    onOpenNowOnlyChanged: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -78,6 +80,19 @@ fun FilterBottomSheet(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "営業状況",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            FilterChip(
+                selected = isOpenNowOnly,
+                onClick = { onOpenNowOnlyChanged(!isOpenNowOnly) },
+                label = { Text("営業中のみ") }
+            )
         }
     }
 }

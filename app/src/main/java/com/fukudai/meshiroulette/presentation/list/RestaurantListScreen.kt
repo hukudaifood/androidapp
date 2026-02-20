@@ -95,8 +95,10 @@ fun RestaurantListScreen(
         FilterBottomSheet(
             selectedGenre = uiState.selectedGenre,
             selectedPriceRange = uiState.selectedPriceRange,
+            isOpenNowOnly = uiState.isOpenNowOnly,
             onGenreSelected = { viewModel.setGenre(it) },
             onPriceRangeSelected = { viewModel.setPriceRange(it) },
+            onOpenNowOnlyChanged = { viewModel.setOpenNowOnly(it) },
             onDismiss = { viewModel.hideFilterSheet() }
         )
     }

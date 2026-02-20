@@ -13,8 +13,9 @@ class SpinRouletteUseCase @Inject constructor(
 ) {
     operator fun invoke(
         genre: Genre? = null,
-        priceRange: PriceRange? = null
+        priceRange: PriceRange? = null,
+        isOpenNow: Boolean? = null
     ): Flow<NetworkResult<Restaurant>> {
-        return repository.spinRoulette(genre, priceRange)
+        return repository.spinRoulette(genre, priceRange, isOpenNow)
     }
 }

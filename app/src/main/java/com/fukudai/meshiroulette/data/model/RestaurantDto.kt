@@ -31,5 +31,7 @@ data class RouletteRequest(
     @SerializedName("genre")
     val genre: String? = null,
     @SerializedName("price_range")
-    val priceRange: Int? = null
+    val priceRange: Int? = null,
+    @SerializedName("only_open_now")
+    val onlyOpenNow: Boolean? = null
 )

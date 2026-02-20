@@ -116,6 +116,9 @@ fun RouletteScreen(
                 if (uiState.selectedPriceRange.displayName != "すべて") {
                     FilterChipDisplay(label = uiState.selectedPriceRange.displayName)
                 }
+                if (uiState.isOpenNowOnly) {
+                    FilterChipDisplay(label = "営業中のみ")
+                }
             }
         }
     }
@@ -124,8 +127,10 @@ fun RouletteScreen(
         FilterBottomSheet(
             selectedGenre = uiState.selectedGenre,
             selectedPriceRange = uiState.selectedPriceRange,
+            isOpenNowOnly = uiState.isOpenNowOnly,
             onGenreSelected = { viewModel.setGenre(it) },
             onPriceRangeSelected = { viewModel.setPriceRange(it) },
+            onOpenNowOnlyChanged = { viewModel.setOpenNowOnly(it) },
             onDismiss = { viewModel.hideFilterSheet() }
         )
     }
