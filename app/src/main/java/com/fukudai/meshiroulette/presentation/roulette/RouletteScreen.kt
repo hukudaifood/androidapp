@@ -153,8 +153,8 @@ fun RouletteScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (uiState.selectedGenre.displayName != "すべて") {
-                    FilterChipDisplay(label = uiState.selectedGenre.displayName)
+                uiState.selectedGenres.forEach { genre ->
+                    FilterChipDisplay(label = genre.displayName)
                 }
                 if (uiState.selectedPriceRange.displayName != "すべて") {
                     FilterChipDisplay(label = uiState.selectedPriceRange.displayName)
@@ -168,10 +168,10 @@ fun RouletteScreen(
 
     if (uiState.showFilterSheet) {
         FilterBottomSheet(
-            selectedGenre = uiState.selectedGenre,
+            selectedGenres = uiState.selectedGenres,
             selectedPriceRange = uiState.selectedPriceRange,
             isOpenNowOnly = uiState.isOpenNowOnly,
-            onGenreSelected = { viewModel.setGenre(it) },
+            onGenreToggled = { viewModel.toggleGenre(it) },
             onPriceRangeSelected = { viewModel.setPriceRange(it) },
             onOpenNowOnlyChanged = { viewModel.setOpenNowOnly(it) },
             onDismiss = { viewModel.hideFilterSheet() }

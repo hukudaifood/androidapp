@@ -12,10 +12,10 @@ class SpinRouletteUseCase @Inject constructor(
     private val repository: RestaurantRepository
 ) {
     operator fun invoke(
-        genre: Genre? = null,
+        genres: List<Genre>? = null,
         priceRange: PriceRange? = null,
         isOpenNow: Boolean? = null
     ): Flow<NetworkResult<Restaurant>> {
-        return repository.spinRoulette(genre, priceRange, isOpenNow)
+        return repository.spinRoulette(genres, priceRange, isOpenNow)
     }
 }

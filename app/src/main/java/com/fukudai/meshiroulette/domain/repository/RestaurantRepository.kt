@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface RestaurantRepository {
 
     fun getRestaurants(
-        genre: Genre? = null,
+        genres: List<Genre>? = null,
         priceRange: PriceRange? = null,
         isOpenNow: Boolean? = null
     ): Flow<NetworkResult<List<Restaurant>>>
@@ -17,7 +17,7 @@ interface RestaurantRepository {
     fun getRestaurantDetail(id: String): Flow<NetworkResult<Restaurant>>
 
     fun spinRoulette(
-        genre: Genre? = null,
+        genres: List<Genre>? = null,
         priceRange: PriceRange? = null,
         isOpenNow: Boolean? = null
     ): Flow<NetworkResult<Restaurant>>

@@ -17,14 +17,14 @@ class RestaurantRepositoryImpl @Inject constructor(
 ) : RestaurantRepository {
 
     override fun getRestaurants(
-        genre: Genre?,
+        genres: List<Genre>?,
         priceRange: PriceRange?,
         isOpenNow: Boolean?
     ): Flow<NetworkResult<List<Restaurant>>> = flow {
         emit(NetworkResult.Loading)
         try {
             val response = apiService.getRestaurants(
-                genre = genre?.takeIf { it != Genre.ALL }?.apiValue,
+                genres = genres?.map { it.apiValue }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() },
                 priceRange = priceRange?.takeIf { it != PriceRange.ALL }?.apiValue,
                 isOpenNow = isOpenNow?.takeIf { it }
             )
@@ -57,14 +57,14 @@ class RestaurantRepositoryImpl @Inject constructor(
     }
 
     override fun spinRoulette(
-        genre: Genre?,
+        genres: List<Genre>?,
         priceRange: PriceRange?,
         isOpenNow: Boolean?
     ): Flow<NetworkResult<Restaurant>> = flow {
         emit(NetworkResult.Loading)
         try {
             val request = RouletteRequest(
-                genre = genre?.takeIf { it != Genre.ALL }?.apiValue,
+                genres = genres?.map { it.apiValue }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() },
                 priceRange = priceRange?.takeIf { it != PriceRange.ALL }?.apiValue,
                 onlyOpenNow = isOpenNow?.takeIf { it }
             )

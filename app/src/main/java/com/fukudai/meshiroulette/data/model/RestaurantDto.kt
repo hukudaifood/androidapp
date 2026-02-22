@@ -28,8 +28,8 @@ data class RestaurantDto(
 )
 
 data class RouletteRequest(
-    @SerializedName("genre")
-    val genre: String? = null,
+    @SerializedName("genres")
+    val genres: List<String>? = null,
     @SerializedName("price_range")
     val priceRange: Int? = null,
     @SerializedName("only_open_now")

@@ -7,7 +7,7 @@ import com.fukudai.meshiroulette.domain.model.Restaurant
 data class RouletteUiState(
     val isSpinning: Boolean = false,
     val selectedRestaurant: Restaurant? = null,
-    val selectedGenre: Genre = Genre.ALL,
+    val selectedGenres: Set<Genre> = emptySet(),
     val selectedPriceRange: PriceRange = PriceRange.ALL,
     val isOpenNowOnly: Boolean = false,
     val showFilterSheet: Boolean = false,

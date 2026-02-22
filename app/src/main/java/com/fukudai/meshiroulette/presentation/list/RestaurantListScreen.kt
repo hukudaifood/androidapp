@@ -87,14 +87,14 @@ fun RestaurantListScreen(
                         .padding(paddingValues)
                 ) {
                     CategoryFilterRow(
-                        selectedGenre = uiState.selectedGenre,
+                        selectedGenres = uiState.selectedGenres,
                         isOpenNowOnly = uiState.isOpenNowOnly,
                         onAllSelected = {
-                            viewModel.setGenre(Genre.ALL)
+                            viewModel.toggleGenre(Genre.ALL)
                             viewModel.setOpenNowOnly(false)
                         },
                         onOpenNowToggle = { viewModel.setOpenNowOnly(!uiState.isOpenNowOnly) },
-                        onGenreSelected = { viewModel.setGenre(it) }
+                        onGenreToggled = { viewModel.toggleGenre(it) }
                     )
                     LazyColumn(
                         modifier = Modifier
@@ -120,10 +120,10 @@ fun RestaurantListScreen(
 
     if (uiState.showFilterSheet) {
         FilterBottomSheet(
-            selectedGenre = uiState.selectedGenre,
+            selectedGenres = uiState.selectedGenres,
             selectedPriceRange = uiState.selectedPriceRange,
             isOpenNowOnly = uiState.isOpenNowOnly,
-            onGenreSelected = { viewModel.setGenre(it) },
+            onGenreToggled = { viewModel.toggleGenre(it) },
             onPriceRangeSelected = { viewModel.setPriceRange(it) },
             onOpenNowOnlyChanged = { viewModel.setOpenNowOnly(it) },
             onDismiss = { viewModel.hideFilterSheet() }
@@ -134,11 +134,11 @@ fun RestaurantListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryFilterRow(
-    selectedGenre: Genre,
+    selectedGenres: Set<Genre>,
     isOpenNowOnly: Boolean,
     onAllSelected: () -> Unit,
     onOpenNowToggle: () -> Unit,
-    onGenreSelected: (Genre) -> Unit
+    onGenreToggled: (Genre) -> Unit
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -146,7 +146,7 @@ private fun CategoryFilterRow(
     ) {
         item {
             FilterChip(
-                selected = selectedGenre == Genre.ALL && !isOpenNowOnly,
+                selected = selectedGenres.isEmpty() && !isOpenNowOnly,
                 onClick = onAllSelected,
                 label = { Text("すべて") }
             )
@@ -160,8 +160,8 @@ private fun CategoryFilterRow(
         }
         items(genreChips) { genre ->
             FilterChip(
-                selected = selectedGenre == genre,
-                onClick = { onGenreSelected(genre) },
+                selected = genre in selectedGenres,
+                onClick = { onGenreToggled(genre) },
                 label = { Text(genre.displayName) }
             )
         }

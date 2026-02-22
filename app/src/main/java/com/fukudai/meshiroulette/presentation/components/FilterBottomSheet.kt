@@ -23,10 +23,10 @@ import com.fukudai.meshiroulette.domain.model.PriceRange
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun FilterBottomSheet(
-    selectedGenre: Genre,
+    selectedGenres: Set<Genre>,
     selectedPriceRange: PriceRange,
     isOpenNowOnly: Boolean,
-    onGenreSelected: (Genre) -> Unit,
+    onGenreToggled: (Genre) -> Unit,
     onPriceRangeSelected: (PriceRange) -> Unit,
     onOpenNowOnlyChanged: (Boolean) -> Unit,
     onDismiss: () -> Unit
@@ -52,10 +52,15 @@ fun FilterBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Genre.entries.forEach { genre ->
+                FilterChip(
+                    selected = selectedGenres.isEmpty(),
+                    onClick = { onGenreToggled(Genre.ALL) },
+                    label = { Text("すべて") }
+                )
+                Genre.entries.filter { it != Genre.ALL }.forEach { genre ->
                     FilterChip(
-                        selected = genre == selectedGenre,
-                        onClick = { onGenreSelected(genre) },
+                        selected = genre in selectedGenres,
+                        onClick = { onGenreToggled(genre) },
                         label = { Text(genre.displayName) }
                     )
                 }

@@ -35,7 +35,7 @@ class RestaurantListViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             try {
                 getRestaurantsUseCase(
-                    genre = _uiState.value.selectedGenre,
+                    genres = _uiState.value.selectedGenres.toList().takeIf { it.isNotEmpty() },
                     priceRange = _uiState.value.selectedPriceRange,
                     isOpenNow = _uiState.value.isOpenNowOnly.takeIf { it }
                 ).collect { result ->
@@ -67,8 +67,19 @@ class RestaurantListViewModel @Inject constructor(
         }
     }
 
-    fun setGenre(genre: Genre) {
-        _uiState.update { it.copy(selectedGenre = genre) }
+    fun toggleGenre(genre: Genre) {
+        _uiState.update { state ->
+            val newGenres = if (genre == Genre.ALL) {
+                emptySet()
+            } else {
+                if (genre in state.selectedGenres) {
+                    state.selectedGenres - genre
+                } else {
+                    state.selectedGenres + genre
+                }
+            }
+            state.copy(selectedGenres = newGenres)
+        }
         loadRestaurants()
     }
 
