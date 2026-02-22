@@ -7,10 +7,12 @@ import com.fukudai.meshiroulette.domain.model.PriceRange
 import com.fukudai.meshiroulette.domain.usecase.GetRestaurantsUseCase
 import com.fukudai.meshiroulette.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,35 +24,44 @@ class RestaurantListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RestaurantListUiState())
     val uiState: StateFlow<RestaurantListUiState> = _uiState.asStateFlow()
 
+    private var loadJob: Job? = null
+
     init {
         loadRestaurants()
     }
 
     fun loadRestaurants() {
-        viewModelScope.launch {
-            getRestaurantsUseCase(
-                genre = _uiState.value.selectedGenre,
-                priceRange = _uiState.value.selectedPriceRange,
-                isOpenNow = _uiState.value.isOpenNowOnly.takeIf { it }
-            ).collect { result ->
-                when (result) {
-                    is NetworkResult.Loading -> {
-                        _uiState.update { it.copy(isLoading = true, error = null) }
-                    }
-                    is NetworkResult.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                restaurants = result.data,
-                                error = null
-                            )
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            try {
+                getRestaurantsUseCase(
+                    genre = _uiState.value.selectedGenre,
+                    priceRange = _uiState.value.selectedPriceRange,
+                    isOpenNow = _uiState.value.isOpenNowOnly.takeIf { it }
+                ).collect { result ->
+                    when (result) {
+                        is NetworkResult.Loading -> {
+                            _uiState.update { it.copy(isLoading = true, error = null) }
+                        }
+                        is NetworkResult.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    restaurants = result.data,
+                                    error = null
+                                )
+                            }
+                        }
+                        is NetworkResult.Error -> {
+                            _uiState.update {
+                                it.copy(isLoading = false, error = result.message)
+                            }
                         }
                     }
-                    is NetworkResult.Error -> {
-                        _uiState.update {
-                            it.copy(isLoading = false, error = result.message)
-                        }
-                    }
+                }
+            } finally {
+                if (!isActive) {
+                    _uiState.update { it.copy(isLoading = false) }
                 }
             }
         }

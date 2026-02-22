@@ -1,8 +1,10 @@
 package com.fukudai.meshiroulette.presentation.roulette
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,16 +34,24 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.fukudai.meshiroulette.domain.model.Restaurant
 import com.fukudai.meshiroulette.presentation.components.FilterBottomSheet
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,11 +62,37 @@ fun RouletteScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    var displayedRestaurant by remember { mutableStateOf<Restaurant?>(null) }
+    var localSpinCount by remember { mutableIntStateOf(0) }
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(error)
             viewModel.clearError()
         }
+    }
+
+    LaunchedEffect(localSpinCount) {
+        if (localSpinCount == 0) return@LaunchedEffect
+
+        val candidates = uiState.candidateRestaurants
+        var index = 0
+        val endTime = System.currentTimeMillis() + 1500L
+
+        // 高速フェーズ: 1.5秒間50ms間隔で店舗カードを順繰り更新
+        while (System.currentTimeMillis() < endTime) {
+            if (candidates.isNotEmpty()) {
+                displayedRestaurant = candidates[index % candidates.size]
+                index++
+            }
+            delay(50)
+        }
+
+        // 待機フェーズ: API結果を待機
+        viewModel.uiState.first { !it.isSpinning }
+
+        // 停止: 選択された店舗を表示
+        displayedRestaurant = viewModel.uiState.value.selectedRestaurant
     }
 
     Scaffold(
@@ -80,11 +116,15 @@ fun RouletteScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            RouletteAnimation(isSpinning = uiState.isSpinning)
+            SlotMachineDisplay(
+                displayedRestaurant = displayedRestaurant,
+                isSpinning = uiState.isSpinning,
+                onDetailClick = onNavigateToDetail
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (uiState.selectedRestaurant != null) {
+            if (uiState.selectedRestaurant != null && !uiState.isSpinning) {
                 ResultCard(
                     restaurant = uiState.selectedRestaurant!!,
                     onDetailClick = { onNavigateToDetail(uiState.selectedRestaurant!!.id) }
@@ -93,7 +133,10 @@ fun RouletteScreen(
             }
 
             Button(
-                onClick = { viewModel.spinRoulette() },
+                onClick = {
+                    localSpinCount++
+                    viewModel.spinRoulette()
+                },
                 enabled = !uiState.isSpinning,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -137,30 +180,80 @@ fun RouletteScreen(
 }
 
 @Composable
-private fun RouletteAnimation(isSpinning: Boolean) {
-    val rotation = remember { Animatable(0f) }
-
-    LaunchedEffect(isSpinning) {
-        if (isSpinning) {
-            rotation.animateTo(
-                targetValue = rotation.value + 1080f,
-                animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
-            )
-        }
-    }
-
+private fun SlotMachineDisplay(
+    displayedRestaurant: Restaurant?,
+    isSpinning: Boolean,
+    onDetailClick: (String) -> Unit
+) {
     Box(
         modifier = Modifier
-            .size(200.dp)
-            .rotate(rotation.value),
+            .fillMaxWidth()
+            .height(260.dp),
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Restaurant,
-            contentDescription = "Roulette",
-            modifier = Modifier.size(120.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
+        AnimatedContent(
+            targetState = displayedRestaurant,
+            transitionSpec = {
+                slideInVertically { it } togetherWith slideOutVertically { -it }
+            },
+            label = "slot_machine"
+        ) { restaurant ->
+            if (restaurant != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .clickable(enabled = !isSpinning) { onDetailClick(restaurant.id) },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = restaurant.imageUrl,
+                            contentDescription = restaurant.name,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(MaterialTheme.shapes.medium),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = restaurant.name,
+                                style = MaterialTheme.typography.titleLarge,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = restaurant.genre.displayName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (!isSpinning) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "タップして詳細を見る →",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    text = "ルーレットを回してください",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 

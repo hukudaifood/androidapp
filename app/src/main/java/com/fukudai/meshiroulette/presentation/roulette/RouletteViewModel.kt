@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fukudai.meshiroulette.domain.model.Genre
 import com.fukudai.meshiroulette.domain.model.PriceRange
+import com.fukudai.meshiroulette.domain.usecase.GetRestaurantsUseCase
 import com.fukudai.meshiroulette.domain.usecase.SpinRouletteUseCase
 import com.fukudai.meshiroulette.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,11 +17,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RouletteViewModel @Inject constructor(
-    private val spinRouletteUseCase: SpinRouletteUseCase
+    private val spinRouletteUseCase: SpinRouletteUseCase,
+    private val getRestaurantsUseCase: GetRestaurantsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RouletteUiState())
     val uiState: StateFlow<RouletteUiState> = _uiState.asStateFlow()
+
+    init {
+        loadCandidates()
+    }
 
     fun spinRoulette() {
         viewModelScope.launch {
@@ -52,16 +58,33 @@ class RouletteViewModel @Inject constructor(
         }
     }
 
+    private fun loadCandidates() {
+        viewModelScope.launch {
+            getRestaurantsUseCase(
+                genre = _uiState.value.selectedGenre.takeIf { it != Genre.ALL },
+                priceRange = _uiState.value.selectedPriceRange.takeIf { it != PriceRange.ALL },
+                isOpenNow = _uiState.value.isOpenNowOnly.takeIf { it }
+            ).collect { result ->
+                if (result is NetworkResult.Success) {
+                    _uiState.update { it.copy(candidateRestaurants = result.data) }
+                }
+            }
+        }
+    }
+
     fun setGenre(genre: Genre) {
         _uiState.update { it.copy(selectedGenre = genre) }
+        loadCandidates()
     }
 
     fun setPriceRange(priceRange: PriceRange) {
         _uiState.update { it.copy(selectedPriceRange = priceRange) }
+        loadCandidates()
     }
 
     fun setOpenNowOnly(isOpenNow: Boolean) {
         _uiState.update { it.copy(isOpenNowOnly = isOpenNow) }
+        loadCandidates()
     }
 
     fun showFilterSheet() {

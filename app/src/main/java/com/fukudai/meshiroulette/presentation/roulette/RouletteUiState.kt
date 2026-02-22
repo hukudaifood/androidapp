@@ -11,5 +11,6 @@ data class RouletteUiState(
     val selectedPriceRange: PriceRange = PriceRange.ALL,
     val isOpenNowOnly: Boolean = false,
     val showFilterSheet: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val candidateRestaurants: List<Restaurant> = emptyList()
 )
