@@ -89,11 +89,17 @@ fun RestaurantDetailScreen(
             uiState.restaurant != null -> {
                 RestaurantDetailContent(
                     restaurant = uiState.restaurant!!,
-                    onOpenMap = { lat, lng, name ->
-                        val uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng($name)")
-                        val intent = Intent(Intent.ACTION_VIEW, uri)
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
+                    onOpenMap = { googleMapsUrl, lat, lng, name ->
+                        val uri = when {
+                            !googleMapsUrl.isNullOrEmpty() -> Uri.parse(googleMapsUrl)
+                            lat != null && lng != null -> Uri.parse("geo:$lat,$lng?q=$lat,$lng($name)")
+                            else -> null
+                        }
+                        uri?.let {
+                            val intent = Intent(Intent.ACTION_VIEW, it)
+                            if (intent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(intent)
+                            }
                         }
                     },
                     modifier = Modifier.padding(paddingValues)
@@ -106,7 +112,7 @@ fun RestaurantDetailScreen(
 @Composable
 private fun RestaurantDetailContent(
     restaurant: Restaurant,
-    onOpenMap: (Double, Double, String) -> Unit,
+    onOpenMap: (String?, Double?, Double?, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -194,11 +200,12 @@ private fun RestaurantDetailContent(
                 }
             }
 
-            if (restaurant.latitude != null && restaurant.longitude != null) {
+            if (!restaurant.googleMapsUrl.isNullOrEmpty() || (restaurant.latitude != null && restaurant.longitude != null)) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = {
                         onOpenMap(
+                            restaurant.googleMapsUrl,
                             restaurant.latitude,
                             restaurant.longitude,
                             restaurant.name
