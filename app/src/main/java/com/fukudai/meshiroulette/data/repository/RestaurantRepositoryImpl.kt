@@ -8,6 +8,7 @@ import com.fukudai.meshiroulette.domain.model.PriceRange
 import com.fukudai.meshiroulette.domain.model.Restaurant
 import com.fukudai.meshiroulette.domain.repository.RestaurantRepository
 import com.fukudai.meshiroulette.util.NetworkResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.Response
@@ -68,6 +69,8 @@ class RestaurantRepositoryImpl @Inject constructor(
             } else {
                 emit(NetworkResult.Error("エラーが発生しました", response.code()))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             emit(NetworkResult.Error(e.message ?: "不明なエラーが発生しました"))
         }

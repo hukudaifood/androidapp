@@ -33,8 +33,10 @@
 }
 
 # Data models (keep for Gson serialization/deserialization)
+# data.model のみ対象とし、Repository実装クラス等は難読化対象とする
 -keep class com.fukudai.meshiroulette.data.model.** { *; }
 -keep class com.fukudai.meshiroulette.domain.model.** { *; }
+-dontwarn com.fukudai.meshiroulette.data.repository.**
 
 # Hilt
 -dontwarn dagger.hilt.**
