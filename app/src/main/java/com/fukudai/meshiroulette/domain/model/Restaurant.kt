@@ -44,8 +44,8 @@ enum class PriceRange(val displayName: String, val apiValue: Int) {
 
     companion object {
         fun fromApiValue(value: Int?): PriceRange {
-            if (value == null) return MEDIUM
-            return entries.find { it.apiValue == value } ?: MEDIUM
+            if (value == null) return ALL
+            return entries.find { it.apiValue == value } ?: ALL
         }
     }
 }

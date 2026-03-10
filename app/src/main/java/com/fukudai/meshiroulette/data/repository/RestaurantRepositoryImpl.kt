@@ -10,6 +10,7 @@ import com.fukudai.meshiroulette.domain.repository.RestaurantRepository
 import com.fukudai.meshiroulette.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import retrofit2.Response
 import javax.inject.Inject
 
 class RestaurantRepositoryImpl @Inject constructor(
@@ -20,58 +21,49 @@ class RestaurantRepositoryImpl @Inject constructor(
         genres: List<Genre>?,
         priceRange: PriceRange?,
         isOpenNow: Boolean?
-    ): Flow<NetworkResult<List<Restaurant>>> = flow {
-        emit(NetworkResult.Loading)
-        try {
-            val response = apiService.getRestaurants(
+    ): Flow<NetworkResult<List<Restaurant>>> = safeApiFlow(
+        apiCall = {
+            apiService.getRestaurants(
                 genres = genres?.map { it.apiValue }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() },
                 priceRange = priceRange?.takeIf { it != PriceRange.ALL }?.apiValue,
                 isOpenNow = isOpenNow?.takeIf { it }
             )
-            if (response.isSuccessful) {
-                response.body()?.let { body ->
-                    emit(NetworkResult.Success(body.toDomain()))
-                } ?: emit(NetworkResult.Error("レスポンスが空です"))
-            } else {
-                emit(NetworkResult.Error("エラーが発生しました", response.code()))
-            }
-        } catch (e: Exception) {
-            emit(NetworkResult.Error(e.message ?: "不明なエラーが発生しました"))
-        }
-    }
+        },
+        transform = { it.toDomain() }
+    )
 
-    override fun getRestaurantDetail(id: String): Flow<NetworkResult<Restaurant>> = flow {
-        emit(NetworkResult.Loading)
-        try {
-            val response = apiService.getRestaurantDetail(id)
-            if (response.isSuccessful) {
-                response.body()?.let { body ->
-                    emit(NetworkResult.Success(body.toDomain()))
-                } ?: emit(NetworkResult.Error("レスポンスが空です"))
-            } else {
-                emit(NetworkResult.Error("エラーが発生しました", response.code()))
-            }
-        } catch (e: Exception) {
-            emit(NetworkResult.Error(e.message ?: "不明なエラーが発生しました"))
-        }
-    }
+    override fun getRestaurantDetail(id: String): Flow<NetworkResult<Restaurant>> = safeApiFlow(
+        apiCall = { apiService.getRestaurantDetail(id) },
+        transform = { it.toDomain() }
+    )
 
     override fun spinRoulette(
         genres: List<Genre>?,
         priceRange: PriceRange?,
         isOpenNow: Boolean?
-    ): Flow<NetworkResult<Restaurant>> = flow {
+    ): Flow<NetworkResult<Restaurant>> = safeApiFlow(
+        apiCall = {
+            apiService.spinRoulette(
+                RouletteRequest(
+                    genres = genres?.map { it.apiValue }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() },
+                    priceRange = priceRange?.takeIf { it != PriceRange.ALL }?.apiValue,
+                    onlyOpenNow = isOpenNow?.takeIf { it }
+                )
+            )
+        },
+        transform = { it.toDomain() }
+    )
+
+    private fun <T, R> safeApiFlow(
+        apiCall: suspend () -> Response<T>,
+        transform: (T) -> R
+    ): Flow<NetworkResult<R>> = flow {
         emit(NetworkResult.Loading)
         try {
-            val request = RouletteRequest(
-                genres = genres?.map { it.apiValue }?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() },
-                priceRange = priceRange?.takeIf { it != PriceRange.ALL }?.apiValue,
-                onlyOpenNow = isOpenNow?.takeIf { it }
-            )
-            val response = apiService.spinRoulette(request)
+            val response = apiCall()
             if (response.isSuccessful) {
                 response.body()?.let { body ->
-                    emit(NetworkResult.Success(body.toDomain()))
+                    emit(NetworkResult.Success(transform(body)))
                 } ?: emit(NetworkResult.Error("レスポンスが空です"))
             } else {
                 emit(NetworkResult.Error("エラーが発生しました", response.code()))
