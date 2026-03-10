@@ -3,6 +3,7 @@ package com.fukudai.meshiroulette.presentation.detail
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,6 +22,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,8 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,15 +42,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.fukudai.meshiroulette.domain.model.Restaurant
 import com.fukudai.meshiroulette.presentation.components.ErrorContent
 import com.fukudai.meshiroulette.presentation.components.LoadingContent
+
+private val AppPrimary = Color(0xFFFF8000)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +82,12 @@ fun RestaurantDetailScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "戻る")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = AppPrimary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -129,8 +145,7 @@ private fun RestaurantDetailContent(
                 contentDescription = restaurant.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(MaterialTheme.shapes.medium),
+                    .height(200.dp),
                 contentScale = ContentScale.Crop
             )
         }
@@ -142,27 +157,45 @@ private fun RestaurantDetailContent(
         ) {
             Text(
                 text = restaurant.name,
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1C1B1F)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = restaurant.genre.displayName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = " | ",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = restaurant.priceRange.displayName,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = AppPrimary
+                ) {
+                    Text(
+                        text = restaurant.genre.displayName,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color(0xFFF3E0CC)
+                ) {
+                    Text(
+                        text = restaurant.priceRange.displayName,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF775A40)
+                    )
+                }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = Color(0xFFF3E0CC))
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.Top) {
@@ -170,12 +203,13 @@ private fun RestaurantDetailContent(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = "住所",
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = AppPrimary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = restaurant.address,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF1C1B1F)
                 )
             }
 
@@ -186,7 +220,7 @@ private fun RestaurantDetailContent(
                         imageVector = Icons.Default.AccessTime,
                         contentDescription = "営業時間",
                         modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = AppPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     val timeText = buildString {
@@ -198,7 +232,8 @@ private fun RestaurantDetailContent(
                     }
                     Text(
                         text = timeText,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF1C1B1F)
                     )
                 }
             }
@@ -214,7 +249,14 @@ private fun RestaurantDetailContent(
                             restaurant.name
                         )
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppPrimary,
+                        contentColor = Color.White
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Map,
@@ -222,7 +264,11 @@ private fun RestaurantDetailContent(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("地図で見る")
+                    Text(
+                        text = "地図で見る",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
