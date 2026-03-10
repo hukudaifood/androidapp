@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,6 +24,8 @@ class RouletteViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(RouletteUiState())
     val uiState: StateFlow<RouletteUiState> = _uiState.asStateFlow()
+
+    private var candidatesJob: Job? = null
 
     init {
         loadCandidates()
@@ -59,7 +62,8 @@ class RouletteViewModel @Inject constructor(
     }
 
     private fun loadCandidates() {
-        viewModelScope.launch {
+        candidatesJob?.cancel()
+        candidatesJob = viewModelScope.launch {
             getRestaurantsUseCase(
                 genres = _uiState.value.selectedGenres.toList().takeIf { it.isNotEmpty() },
                 priceRange = _uiState.value.selectedPriceRange.takeIf { it != PriceRange.ALL },

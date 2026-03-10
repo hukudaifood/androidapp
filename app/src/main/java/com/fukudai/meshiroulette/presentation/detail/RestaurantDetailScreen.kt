@@ -1,5 +1,6 @@
 package com.fukudai.meshiroulette.presentation.detail
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
@@ -97,8 +98,10 @@ fun RestaurantDetailScreen(
                         }
                         uri?.let {
                             val intent = Intent(Intent.ACTION_VIEW, it)
-                            if (intent.resolveActivity(context.packageManager) != null) {
+                            try {
                                 context.startActivity(intent)
+                            } catch (_: ActivityNotFoundException) {
+                                // 地図アプリが端末にインストールされていない場合は何もしない
                             }
                         }
                     },
