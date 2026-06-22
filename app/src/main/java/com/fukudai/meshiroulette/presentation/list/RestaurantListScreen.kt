@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -20,11 +21,13 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +36,12 @@ import com.fukudai.meshiroulette.presentation.components.ErrorContent
 import com.fukudai.meshiroulette.presentation.components.FilterBottomSheet
 import com.fukudai.meshiroulette.presentation.components.LoadingContent
 import com.fukudai.meshiroulette.presentation.components.RestaurantCard
+
+private val AppPrimary = Color(0xFFFF8000)
+private val ChipSelectedContainer = Color(0xFFFF8000)
+private val ChipSelectedLabel = Color.White
+private val ChipUnselectedContainer = Color(0xFFF3E0CC)
+private val ChipUnselectedLabel = Color(0xFF775A40)
 
 private val genreChips = listOf(
     Genre.TEISHOKU, Genre.CHINESE, Genre.RAMEN, Genre.CURRY,
@@ -64,7 +73,12 @@ fun RestaurantListScreen(
                     IconButton(onClick = { viewModel.showFilterSheet() }) {
                         Icon(Icons.Default.FilterList, contentDescription = "フィルター")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = AppPrimary,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -144,26 +158,52 @@ private fun CategoryFilterRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        val allSelected = selectedGenres.isEmpty() && !isOpenNowOnly
         item {
             FilterChip(
-                selected = selectedGenres.isEmpty() && !isOpenNowOnly,
+                selected = allSelected,
                 onClick = onAllSelected,
-                label = { Text("すべて") }
+                label = { Text("すべて") },
+                colors = rowChipColors(allSelected),
+                border = rowChipBorder(allSelected)
             )
         }
         item {
             FilterChip(
                 selected = isOpenNowOnly,
                 onClick = onOpenNowToggle,
-                label = { Text("営業中") }
+                label = { Text("営業中") },
+                colors = rowChipColors(isOpenNowOnly),
+                border = rowChipBorder(isOpenNowOnly)
             )
         }
         items(genreChips) { genre ->
+            val selected = genre in selectedGenres
             FilterChip(
-                selected = genre in selectedGenres,
+                selected = selected,
                 onClick = { onGenreToggled(genre) },
-                label = { Text(genre.displayName) }
+                label = { Text(genre.displayName) },
+                colors = rowChipColors(selected),
+                border = rowChipBorder(selected)
             )
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun rowChipColors(selected: Boolean) = FilterChipDefaults.filterChipColors(
+    containerColor = ChipUnselectedContainer,
+    labelColor = ChipUnselectedLabel,
+    selectedContainerColor = ChipSelectedContainer,
+    selectedLabelColor = ChipSelectedLabel
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun rowChipBorder(selected: Boolean) = FilterChipDefaults.filterChipBorder(
+    enabled = true,
+    selected = selected,
+    borderColor = Color.Transparent,
+    selectedBorderColor = Color.Transparent
+)
